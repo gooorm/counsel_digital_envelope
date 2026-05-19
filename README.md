@@ -12,6 +12,30 @@ KeyManager
 generateRSAKeyPair(), generateAESKey()
 saveKey / loadKey
 
+###Alice → Bob###
+Alice
+1. Alice 개인키로 서명
+2. Bob 공개키로 봉투 생성
+Bob
+1. Bob 개인키로 봉투 개봉
+2. Alice 공개키로 서명 검증
+
+###Bob → Alice###
+Bob
+1. Bob 개인키로 서명
+2. Alice 공개키로 봉투 생성
+Alice
+1. Alice 개인키로 봉투 개봉
+2. Bob 공개키로 서명 검증
+
+###Alice → Charlie###
+Alice
+1. Alice 개인키로 "전송 동의" 서명
+2. Charlie 공개키로 봉투 생성
+Charlie
+1. Charlie 개인키로 봉투 개봉
+2. Alice 공개키로 동의 검증
+3. Bob 공개키로 의료기록 검증
 
 	// ========================= 수신자 로직 =========================
 	//
