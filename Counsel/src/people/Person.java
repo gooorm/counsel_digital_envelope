@@ -10,4 +10,7 @@ public class Person {
     protected PublicKey publicKey;
     protected PrivateKey privateKey;
 
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
 }
