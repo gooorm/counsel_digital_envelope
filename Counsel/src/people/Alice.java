@@ -32,7 +32,7 @@ public class Alice extends Person {
 	// 2. Bob 공개키로 봉투 생성
 	public EnvelopeContent sendConsentToBob(PublicKey bobPubKey) {
 		try {
-			byte[] plainText = "본인은 심리 상담 진행 및 기록 보관에 동의합니다. 환자: 홍길동".getBytes("UTF-8");
+			byte[] plainText = "본인은 심리 상담 진행 및 기록 보관, 법적 증거 자료 활용에 동의합니다. 의뢰인: 홍길동".getBytes("UTF-8");
 
 			DigitalSignature ds = new DigitalSignature();
 			byte[] signature = ds.sign(plainText, this.privateKey);
@@ -61,15 +61,15 @@ public class Alice extends Person {
 			boolean valid = ds.verify(doc.getPlainText(), doc.getSignature(), doc.getSenderPubKey());
 
 			System.out.println("[Alice] Bob 서명 검증: " + (valid ? "성공" : "실패"));
-			System.out.println("[Alice] 수신 의료기록: " + new String(doc.getPlainText(), "UTF-8"));
+			System.out.println("[Alice] 수신 상담 소견서: " + new String(doc.getPlainText(), "UTF-8"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	// Phase 4: Alice → Charlie
-	// 1. Alice 사설키로 Bob 문서 전체에 전송 동의 서명 (이중 서명)
-	// 2. Charlie 공개키로 봉투 생성
+	// Phase 4: Alice → Charlie (법원)
+	// 1. Alice 사설키로 Bob 소견서 전체에 증거 제출 동의 서명 (이중 서명)
+	// 2. Charlie(법원) 공개키로 봉투 생성
 	public EnvelopeContent sendToCharlie(PublicKey charliePubKey) {
 		try {
 			DigitalSignature ds = new DigitalSignature();

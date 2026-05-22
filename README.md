@@ -1,6 +1,10 @@
 # counsel_digital_envelope
 코드보안 전자봉투 프로젝트
 
+등장인물
+- Alice: 의뢰인 (상담 신청자 및 법적 증거 자료 제출 주체)
+- Bob: 심리 상담사 (상담 기록 작성 및 공식 인증자)
+- Charlie: 법원 (제출된 상담 기록을 증거로 채택하는 기관)
 
 DigitalEnvelope
 open(), seal()
@@ -28,14 +32,14 @@ Alice
 1. Alice 개인키로 봉투 개봉
 2. Bob 공개키로 서명 검증
 
-###Alice → Charlie###
+###Alice → Charlie (법원)###
 Alice
-1. Alice 개인키로 "전송 동의" 서명
-2. Charlie 공개키로 봉투 생성
+1. Alice 개인키로 "증거 제출 동의" 서명
+2. Charlie(법원) 공개키로 봉투 생성
 Charlie
 1. Charlie 개인키로 봉투 개봉
-2. Alice 공개키로 동의 검증
-3. Bob 공개키로 의료기록 검증
+2. Alice 공개키로 제출 동의 검증
+3. Bob 공개키로 공식 상담 소견서 검증
 
 	// ========================= 수신자 로직 =========================
 	//
