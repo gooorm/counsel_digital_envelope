@@ -16,9 +16,8 @@ public class Main {
         Lawyer lawyer = new Lawyer("담당 변호사");
  
         System.out.println("--- [1] 상담 기록 작성 ---");
-        String record = "점순이가 너네 집엔 봄감자가 없냐고 괴롭혀서 힘들었다"; 
         System.out.print("상담 내용을 작성해주세요: ");
-        record = sc.next();
+        record = sc.nextLine();
         counselor.setMedicalRecord(record);
 
         // 상담 기록을 파일로 저장 (FileOutputStream 사용)
