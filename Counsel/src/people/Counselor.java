@@ -1,4 +1,5 @@
 package people;
+import java.io.FileInputStream;
 import java.security.NoSuchAlgorithmException;
 
 import envelope.DigitalEnvelope;
@@ -27,6 +28,21 @@ public class Counselor extends Person {
 
         byte[] signature = DigitalSignature.sign(medicalRecord, getPrivateKey());
         DigitalEnvelope.SignedDocument confirmedDoc = new DigitalEnvelope.SignedDocument(signature, medicalRecord, getPublicKey());
+
+        byte[] serialized = DigitalEnvelope.serialize(confirmedDoc);
+        return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
+    }
+
+    // 파일에 저장된 상담 기록을 읽어서 전자봉투를 생성하는 행위
+    public DigitalEnvelope.EnvelopeContent sealRecordFromFile(String filePath, Person receiver) throws Exception {
+        // FileInputStream으로 파일 읽기
+        byte[] data;
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            data = fis.readAllBytes();
+        }
+
+        byte[] signature = DigitalSignature.sign(data, getPrivateKey());
+        DigitalEnvelope.SignedDocument confirmedDoc = new DigitalEnvelope.SignedDocument(signature, data, getPublicKey());
 
         byte[] serialized = DigitalEnvelope.serialize(confirmedDoc);
         return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
