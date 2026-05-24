@@ -17,7 +17,7 @@ public class Main {
  
         System.out.println("--- [1] 상담 기록 작성 ---");
         System.out.print("상담 내용을 작성해주세요: ");
-        record = sc.nextLine();
+        String record = sc.nextLine();
         counselor.setMedicalRecord(record);
 
         // 상담 기록을 파일로 저장 (FileOutputStream 사용)
