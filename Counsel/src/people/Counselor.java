@@ -24,7 +24,7 @@ public class Counselor extends Person {
 
     // 상담 기록을 서명하고 전자봉투로 포장하여 반환하는 행위
     public DigitalEnvelope.EnvelopeContent sealRecordFor(Person receiver) throws Exception {
-        if (medicalRecord == null) throw new IllegalStateException("상담 기록이 없습니다.");
+        if (medicalRecord == null) {throw new IllegalStateException("상담 기록이 없습니다.");}
 
         byte[] signature = DigitalSignature.sign(medicalRecord, getPrivateKey());
         DigitalEnvelope.SignedDocument confirmedDoc = new DigitalEnvelope.SignedDocument(signature, medicalRecord, getPublicKey());
