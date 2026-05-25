@@ -6,8 +6,8 @@ import envelope.DigitalSignature;
 
 public class Client extends Person {
 
-    public Client(String name) throws NoSuchAlgorithmException {
-        super(name);
+    public Client(String name, KeyPair keyPair) {
+        super(name, keyPair);
     }
 
     // 내담자는 동의서에 서명하는 행위를 가짐
