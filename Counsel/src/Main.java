@@ -49,21 +49,25 @@ public class Main {
 			String consentText = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
 			SignedDocument consent = client.signConsent(consentText);
 			System.out.println("→ 내담자가 동의서에 전자서명하여 전송했습니다.");
-
+			
+			
+			waitBeforeEnter("본인 확인을 진행하려면 엔터를 누르십시오.", sc);
 			// [2] 상담사가 동의서의 서명을 검증
 			banner("[ 2 ] 상담사 : 동의서 서명 검증 (본인 확인)");
-			buffering("동의서 서명 검증 중", 3);
+			buffering("동의서 서명 검증 중", 2);
 			if (counselor.receiveAndVerifyConsent(consent, client)) {
-
+				waitBeforeEnter("상담 기록을 봉인 및 전송하려면 Enter를 누르십시오.", sc);
 				// [3] 상담사가 상담 기록을 봉인하여 변호사에게 전송
 				banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");
+				buffering("상담 기록 전송 중", 2);
 				EnvelopeContent envelope = counselor.sealRecordFromFile(RECORD_FILE, lawyer);
-				buffering("상담사 기록 봉인 및 전송 중", 3);
 				System.out.println("→ 상담사가 '" + RECORD_FILE + "'를 읽어 전자서명 후 전자봉투로 봉인하여 전송했습니다.");
 
 				// [4] 변호사가 전자봉투를 개봉하고 발신자 서명을 검증
+				waitBeforeEnter("전자봉투 개봉 및 발신자 검증을 하려면 Enter를 누르십시오.", sc);
 				banner("[ 4 ] 변호사 : 전자봉투 개봉 및 발신자 검증");
-				buffering("전자봉투 개봉 및 발신자 검증 중", 3);
+				buffering("전자봉투 개봉 중", 1);
+				buffering("발신자 검증 중", 1);
 				if (lawyer.receiveAndVerifyEvidence(envelope, counselor)) {
 					banner("모든 절차가 안전하게 완료되었습니다");
 				} else {
@@ -105,5 +109,8 @@ public class Main {
 	    System.out.println("] 완료");
 	}
 
-
+	public static void waitBeforeEnter(String sentence, Scanner sc) {
+		System.out.print(sentence);
+		sc.nextLine();
+	}
 }
