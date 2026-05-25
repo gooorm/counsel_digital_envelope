@@ -1,6 +1,5 @@
 package people;
-import java.security.NoSuchAlgorithmException;
-
+import java.security.KeyPair;
 import envelope.DigitalEnvelope;
 
 public class Lawyer extends Person {
