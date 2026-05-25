@@ -1,12 +1,10 @@
 package people;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import envelope.DigitalEnvelope;
 import envelope.DigitalSignature;
-import envelope.KeyManager;
 
 public abstract class Person {
     private final String name;
