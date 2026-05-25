@@ -2,10 +2,7 @@ package envelope;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.io.*;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 
 public class KeyManager {
 
@@ -44,10 +41,33 @@ public class KeyManager {
         saveKey(keyPair.getPrivate(), privateKeyFilename);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends Key> T loadKey(String filename, Class<T> type) throws IOException, ClassNotFoundException {
+    //수정된 메서드 -> 서프레스 워닝 위치 수정함
+    public static <T extends Key> T loadKey(String filename) throws IOException, ClassNotFoundException {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
-            return (T) ois.readObject();
+            @SuppressWarnings("unchecked")
+            T key = (T) ois.readObject();
+            return key;
+        }
+    }
+
+    // 추가된 메서드
+    public static KeyPair getOrGenerateKeyPair(String name) throws Exception {
+        String pubKeyFilename = name + "_pub.key";
+        String privateKeyFilename = name + "_priv.key";
+
+        try {
+            // 1. 일단 스트림을 열어 기존 파일이 있는지 읽어오기 시도
+            PublicKey pub = loadKey(pubKeyFilename);
+            PrivateKey priv = loadKey(privateKeyFilename);
+            System.out.println("[KeyManager] " + name + "의 기존 키 파일을 성공적으로 불러왔습니다.");
+            return new KeyPair(pub, priv);
+
+        } catch (FileNotFoundException e) {
+            // 2. 파일이 없어서 에러가 나면 여기서 즉시 새로 생성하고 파일로 저장까지 완료
+            System.out.println("[KeyManager] " + name + "의 키 파일이 없어 새로 생성하고 저장합니다.");
+            KeyPair keyPair = generateRSAKeyPair();
+            saveKey(keyPair, pubKeyFilename, privateKeyFilename);
+            return keyPair;
         }
     }
 }

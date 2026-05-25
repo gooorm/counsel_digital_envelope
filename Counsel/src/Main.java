@@ -1,62 +1,87 @@
-import java.io.FileOutputStream;
-import java.util.Scanner;
-
 import envelope.DigitalEnvelope.EnvelopeContent;
 import envelope.DigitalEnvelope.SignedDocument;
+import envelope.KeyManager;
 import people.Client;
 import people.Counselor;
 import people.Lawyer;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Scanner;
+
+/**
+ * 상담 기록 제3자 제공 — 전자봉투 보안 전송 프로토타입.
+ *
+ * 시나리오 흐름:
+ *   [1] 내담자 → 상담사 : 제3자 제공 동의서를 전자서명하여 전송
+ *   [2] 상담사          : 동의서 서명을 검증해 내담자 본인임을 확인
+ *   [3] 상담사 → 변호사 : 상담 기록을 전자서명 후 전자봉투로 봉인하여 전송
+ *   [4] 변호사          : 전자봉투를 개봉하고 상담사의 서명을 검증
+ */
+
 public class Main {
+
+    private static final String RECORD_FILE = "상담기록.txt";
+
     public static void main(String[] args) throws Exception {
+        try (Scanner sc = new Scanner(System.in)) {
 
-    	try (Scanner sc = new Scanner(System.in)) {
-    		Client client = new Client("내담자");
-            Counselor counselor = new Counselor("상담사");
-            Lawyer lawyer = new Lawyer("담당 변호사");
+            // 등장인물과 키 준비 (기존 키가 있으면 복구, 없으면 생성)
+            Client client = new Client("내담자",  KeyManager.getOrGenerateKeyPair("client"));
+            Counselor counselor = new Counselor("상담사", KeyManager.getOrGenerateKeyPair("counselor"));
+            Lawyer lawyer = new Lawyer("변호사",  KeyManager.getOrGenerateKeyPair("lawyer"));
 
-            System.out.println("--- [1] 상담 기록 작성 ---");
-            System.out.print("상담 내용을 작성해주세요: ");
+            banner("상담 기록 제3자 제공 · 전자봉투 보안 전송 시스템");
+            System.out.println(" 흐름 :  내담자 ──(동의서)──▶ 상담사 ──(전자봉투)──▶ 변호사");
+
+            // [준비] 상담사가 상담 기록을 작성하여 파일로 저장
+            banner("[ 준비 ] 상담사가 상담 기록을 작성합니다");
+            System.out.print("상담 내용 입력 > ");
             String record = sc.nextLine();
-            counselor.setMedicalRecord(record);
+            writeRecordFile(record);
+            System.out.println("→ '" + RECORD_FILE + "'에 저장되었습니다.");
 
-            // 상담 기록을 파일로 저장
-            String recordF = "record.txt";
-            try (FileOutputStream fos = new FileOutputStream(recordF)) {
-                fos.write(record.getBytes());
+            // [1] 내담자가 동의서에 서명하여 상담사에게 전송
+            banner("[ 1 ] 내담자 → 상담사 : 제3자 제공 동의");
+            System.out.print("상담 기록을 변호사에게 제공하는 데 동의하십니까? (Y/n) > ");
+            if (!sc.nextLine().trim().equalsIgnoreCase("Y")) {
+                System.out.println("\n동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
+                return;
             }
-            System.out.println(counselor.getName() + ": 상담 기록을 작성하고 " + recordF + "에 저장했습니다.");
-            
-            System.out.println("\n--- [2] 내담자의 정보 제공 동의 ---");
-            
-            String agree = "";
-            while (true) {
-                System.out.print("상담 기록을 제 3자에게 제공하는 것에 동의합니까?(y/n): ");
-                agree = sc.nextLine().trim().toLowerCase();
+            String consentText = client.getName()
+                    + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
+            SignedDocument consent = client.signConsent(consentText);
+            System.out.println("→ 내담자가 동의서에 전자서명하여 전송했습니다.");
 
-                if (agree.equals("y") || agree.equals("n")) {
-                    break;
-                } else {
-                    System.out.println("동의에 실패하였습니다. y 또는 n만 입력해주세요.");
-                }
-            }
-            
-            if(agree.equals("y")) {
-                SignedDocument consent = client.signConsent(agree);
-                counselor.receiveAndVerifyConsent(consent, client);
-                System.out.println("\n--- [3] 상담사의 상담 기록 봉인 및 제출 ---");
-                // 저장된 파일을 읽어 전자봉투 생성 (FileInputStream 사용)
-                EnvelopeContent envelope = counselor.sealRecordFromFile(recordF, lawyer);
-                System.out.println(counselor.getName() + ": '" + recordF + "'를 읽어 전자봉투를 생성하고 제출했습니다.");
-                
-                System.out.println("\n--- [4] 법원(변호사)의 증거 수신 및 검증 ---");
-                lawyer.receiveAndVerifyEvidence(envelope, counselor);
-                
-            }else {
-            	System.out.println("상담 기록 제출 동의에 거부하여 문서는 제출되지 않습니다.");
-            	System.out.println("좋은 하루 되세요.");
-            }
-    	}
-    	
+            // [2] 상담사가 동의서의 서명을 검증
+            banner("[ 2 ] 상담사 : 동의서 서명 검증 (본인 확인)");
+            counselor.receiveAndVerifyConsent(consent, client);
+
+            // [3] 상담사가 상담 기록을 봉인하여 변호사에게 전송
+            banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");
+            EnvelopeContent envelope = counselor.sealRecordFromFile(RECORD_FILE, lawyer);
+            System.out.println("→ 상담사가 '" + RECORD_FILE
+                    + "'를 읽어 전자서명 후 전자봉투로 봉인하여 전송했습니다.");
+
+            // [4] 변호사가 전자봉투를 개봉하고 발신자 서명을 검증
+            banner("[ 4 ] 변호사 : 전자봉투 개봉 및 발신자 검증");
+            lawyer.receiveAndVerifyEvidence(envelope, counselor);
+
+            banner("모든 절차가 안전하게 완료되었습니다");
+        }
+    }
+
+    // 상담 기록을 파일로 저장
+    private static void writeRecordFile(String record) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(RECORD_FILE)) {
+            fos.write(record.getBytes());
+        }
+    }
+
+    // 구분선이 있는 단계 제목 출력
+    private static void banner(String title) {
+        System.out.println("\n============================================================");
+        System.out.println(" " + title);
+        System.out.println("============================================================");
     }
 }

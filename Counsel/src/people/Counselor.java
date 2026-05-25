@@ -1,6 +1,6 @@
 package people;
 import java.io.FileInputStream;
-import java.security.NoSuchAlgorithmException;
+import java.security.KeyPair;
 
 import envelope.DigitalEnvelope;
 import envelope.DigitalSignature;
@@ -8,8 +8,8 @@ import envelope.DigitalSignature;
 public class Counselor extends Person {
     private byte[] medicalRecord;
 
-    public Counselor(String name) throws NoSuchAlgorithmException {
-        super(name);
+    public Counselor(String name, KeyPair keyPair) {
+        super(name, keyPair);
     }
 
     public void setMedicalRecord(String record) {
