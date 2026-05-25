@@ -3,6 +3,7 @@ import java.util.Scanner;
 
 import envelope.DigitalEnvelope.EnvelopeContent;
 import envelope.DigitalEnvelope.SignedDocument;
+import envelope.KeyManager;
 import people.Client;
 import people.Counselor;
 import people.Lawyer;
