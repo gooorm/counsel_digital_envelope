@@ -1,0 +1,38 @@
+12. Do not use insecure or weak cryptographic algorithms
+22. Minimize the scope of variables 
+23. Minimize the scope of the @SuppressWarnings annotation 
+24. Minimize the accessibility of classes and their members 
+26. Always provide feedback about the resulting value of a method
+28. Do not attach significance to the ordinal associated with an enum 
+29. Be aware of numeric promotion behavior 
+30. Enable compile-time type checking of variable arity parameter types 
+31. Do not apply public final to constants whose value might change in later releases 
+33. Prefer user-defined exceptions over more general exception types 
+37. Do not shadow or obscure identifiers in subscopes 
+38. Do not declare more than one variable per declaration 
+39. Use meaningful symbolic constants to represent literal values in program logic 
+40. Properly encode relationships in constant definitions 
+41. Return an empty array or collection instead of a null value for methods that return an array or collection 
+42. Use exceptions only for exceptional conditions 
+43. Use a try-with-resources statement to safely handle closeable resources 
+50. Be careful using visually misleading identifiers and literals 
+51. Avoid ambiguous overloading of variable arity methods 
+52. Avoid in-band error indicators 
+53. Do not perform assignments in conditional expressions 
+54. Use braces for the body of an if, for, or while statement 
+55. Do not place a semicolon immediately following an if, for, or while condition 
+56. Finish every set of statements associated with a case label with a break statement 
+57. Avoid inadvertent wrapping of loop counters
+58. Use parentheses for precedence of operation 
+60. Convert integers to floating-point for floating-point operations 
+
+4. Ensure that security-sensitive methods are called with validated arguments
+16. Avoid granting excess privileges
+17. Minimize privileged code
+2. Do not store unencrypted sensitive information on the client side
+3. Provide sensitive mutable classes with unmodifiable wrappers
+10. Do not use the clone() method to copy untrusted method parameters
+61. Ensure that the clone() method calls super.clone()
+62. Use comments consistently and in a readable fashion
+63. Detect and remove superfluous code and values
+64. Strive for logical completeness
