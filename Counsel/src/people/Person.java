@@ -13,9 +13,8 @@ public abstract class Person {
     private final PublicKey publicKey;
     private final PrivateKey privateKey;
 
-    public Person(String name) throws NoSuchAlgorithmException {
+    public Person(String name, KeyPair keyPair) {
         this.name = name;
-        KeyPair keyPair = KeyManager.generateRSAKeyPair();
         this.publicKey = keyPair.getPublic();
         this.privateKey = keyPair.getPrivate();
     }
