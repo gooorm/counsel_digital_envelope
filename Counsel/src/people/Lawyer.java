@@ -5,8 +5,8 @@ import envelope.DigitalEnvelope;
 
 public class Lawyer extends Person {
 
-    public Lawyer(String name) throws NoSuchAlgorithmException {
-        super(name);
+    public Lawyer(String name, KeyPair keyPair) {
+        super(name, keyPair);
     }
 
     // 제출받은 전자봉투를 개봉하고 서명을 검증하는 행위
