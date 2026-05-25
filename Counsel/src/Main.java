@@ -11,9 +11,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
     	Scanner sc = new Scanner(System.in);
-    	Client client = new Client("내담자");
-        Counselor counselor = new Counselor("상담사");
-        Lawyer lawyer = new Lawyer("담당 변호사");
+    	Client client = new Client("내담자", KeyManager.getOrGenerateKeyPair("client"));
+        Counselor counselor = new Counselor("상담사", KeyManager.getOrGenerateKeyPair("counselor"));
+        Lawyer lawyer = new Lawyer("담당 변호사", KeyManager.getOrGenerateKeyPair("lawyer"));
  
         System.out.println("--- [1] 상담 기록 작성 ---");
         System.out.print("상담 내용을 작성해주세요: ");
