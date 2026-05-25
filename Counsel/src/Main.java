@@ -48,6 +48,7 @@ public class Main {
 			}
 			String consentText = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
 			SignedDocument consent = client.signConsent(consentText);
+			buffering("동의서 전송 중", 1);
 			System.out.println("→ 내담자가 동의서에 전자서명하여 전송했습니다.");
 			
 			
