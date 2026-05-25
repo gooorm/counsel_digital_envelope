@@ -1,6 +1,6 @@
 package people;
 import java.io.FileInputStream;
-import java.security.NoSuchAlgorithmException;
+import java.security.KeyPair;
 
 import envelope.DigitalEnvelope;
 import envelope.DigitalSignature;
