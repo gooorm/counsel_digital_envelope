@@ -1,2 +1,6 @@
 /.metadata/
 .idea/
+
+# 런타임 생성 파일
+*.key
+상담기록.txt
