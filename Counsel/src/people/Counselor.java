@@ -1,6 +1,8 @@
 package people;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
 
 import envelope.DigitalEnvelope.SignedDocument;
@@ -64,5 +66,11 @@ public class Counselor extends Person {
 
 		byte[] serialized = DigitalEnvelope.serialize(confirmedDoc);
 		return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
+	}
+	// 상담 기록을 파일로 저장
+	public void writeRecordToFile(String fileName) throws IOException {
+		try (FileOutputStream fos = new FileOutputStream(fileName)) {
+			fos.write(counselingRecord);
+		}
 	}
 }

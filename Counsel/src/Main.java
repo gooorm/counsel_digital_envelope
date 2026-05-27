@@ -5,8 +5,6 @@ import people.Client;
 import people.Counselor;
 import people.Lawyer;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -36,7 +34,9 @@ public class Main {
 			banner("[ 준비 ] 상담사가 상담 기록을 작성합니다");
 			System.out.print("상담 내용 입력 > ");
 			String record = sc.nextLine();
-			writeRecordFile(record);
+			counselor.setCounselingRecord(record); 
+			counselor.writeRecordToFile(RECORD_FILE);
+			
 			System.out.println("→ '" + RECORD_FILE + "'에 저장되었습니다.");
 
 			// [1] 내담자가 동의서에 서명하여 상담사에게 전송
@@ -78,12 +78,7 @@ public class Main {
 		}
 	}
 
-	// 상담 기록을 파일로 저장
-	private static void writeRecordFile(String record) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(RECORD_FILE)) {
-			fos.write(record.getBytes());
-		}
-	}
+
 
 	// 구분선이 있는 단계 제목 출력
 	private static void banner(String title) {
