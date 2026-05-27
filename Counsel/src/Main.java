@@ -42,7 +42,7 @@ public class Main {
 			// [1] 내담자가 동의서에 서명하여 상담사에게 전송
 			banner("[ 1 ] 내담자 → 상담사 : 제3자 제공 동의");
 			System.out.print("상담 기록을 변호사에게 제공하는 데 동의하십니까? (Y/n) > ");
-			if (sc.nextLine().trim().toLowerCase() != "y") {
+			if (sc.nextLine().trim().toLowerCase().equals("y")) {
 				System.out.println("\n동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
 				return;
 			}
