@@ -1,9 +1,12 @@
 package envelope;
+
 import java.security.*;
 
-public class DigitalSignature {
+public final class DigitalSignature {
 
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
+
+    private DigitalSignature() {}
 
     // 전자서명 생성: 평문의 해시값을 송신자의 사설키로 암호화
     // → 송신자만이 생성할 수 있으므로 부인 방지가 보장됨

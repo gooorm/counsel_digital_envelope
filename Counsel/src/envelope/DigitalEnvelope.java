@@ -1,107 +1,157 @@
 package envelope;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 
-public class DigitalEnvelope {
+import javax.crypto.*;
+import java.io.*;
+import java.security.*;
+
+public final class DigitalEnvelope {
 
     private static final String AES_TRANSFORMATION = "AES/ECB/PKCS5Padding";
     private static final String RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding";
 
-    // 데이터 묶음
+    private DigitalEnvelope() {
+    }
+
+    // -------------------------------------------------------------------------
+
     public static class SignedDocument implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
-        private final byte[] signature;       // 전자서명
-        private final byte[] plainText;       // 평문 (원문)
-        private final PublicKey senderPubKey; // 송신자의 공개키
+        private final byte[] signature;
+        private final byte[] plainText;
+        private final PublicKey senderPubKey;
 
         public SignedDocument(byte[] signature, byte[] plainText, PublicKey senderPubKey) {
-            this.signature = signature;
-            this.plainText = plainText;
+            this.signature = signature.clone();
+            this.plainText = plainText.clone();
             this.senderPubKey = senderPubKey;
         }
 
-        public byte[] getSignature()       { return signature; }
-        public byte[] getPlainText()       { return plainText; }
-        public PublicKey getSenderPubKey() { return senderPubKey; }
+        public byte[] getSignature() {
+            return signature.clone();
+        }
+
+        public byte[] getPlainText() {
+            return plainText.clone();
+        }
+
+        public PublicKey getSenderPubKey() {
+            return senderPubKey;
+        }
     }
 
+    // -------------------------------------------------------------------------
 
-    //암호화된 데이터 묶음
     public static class EnvelopeContent implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
-        private final byte[] encryptedData; // 암호화된 SignedDocument
-        private final byte[] sealedKey;     // AES 비밀키를 수신자의 공개키로 비대칭 암호화한 전자봉투
+        private final byte[] encryptedData; // AES로 암호화된 SignedDocument
+        private final byte[] sealedKey;     // SecretKey 객체를 RSA로 암호화한 전자봉투
 
         public EnvelopeContent(byte[] encryptedData, byte[] sealedKey) {
-            this.encryptedData = encryptedData;
-            this.sealedKey = sealedKey;
+            this.encryptedData = encryptedData.clone();
+            this.sealedKey = sealedKey.clone();
         }
 
-        public byte[] getEncryptedData() { return encryptedData; }
-        public byte[] getSealedKey()     { return sealedKey; }
+        public byte[] getEncryptedData() {
+            return encryptedData.clone();
+        }
+
+        public byte[] getSealedKey() {
+            return sealedKey.clone();
+        }
     }
 
+    // -------------------------------------------------------------------------
+    // 암/복호화 (작은 데이터 전용 — 큰 데이터는 별도 스트리밍 처리 필요)
+    // -------------------------------------------------------------------------
 
-    // (전자서명 + 평문 + 송신자 공개키) 묶음을 직렬화하여 byte[]로 변환
-    public static byte[] serialize(SignedDocument doc) throws IOException {
+    private static byte[] encrypt(byte[] rawData, Key key, String algorithm)
+            throws NoSuchAlgorithmException, InvalidKeyException,
+            NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return cipher.doFinal(rawData);
+    }
+
+    private static byte[] decrypt(byte[] encryptedData, Key key, String algorithm)
+            throws NoSuchAlgorithmException, InvalidKeyException,
+            NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        return cipher.doFinal(encryptedData);
+    }
+
+    // -------------------------------------------------------------------------
+    // SecretKey ↔ byte[] 변환 : getEncoded/SecretKeySpec 대신 스트림 직렬화 사용
+    // -------------------------------------------------------------------------
+
+    // SecretKey 객체를 ObjectOutputStream으로 직렬화 → byte[]
+    private static byte[] keyToBytes(SecretKey secretKey) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            oos.writeObject(doc);
+            oos.writeObject(secretKey);
             return baos.toByteArray();
         }
     }
 
-    // 전자봉투 생성 (송신자가 AES 비밀키를 직접 지정하는 버전)
-    public static EnvelopeContent seal(byte[] serialized, PublicKey receiverPub, SecretKey sessionKey)
-            throws GeneralSecurityException {
-        byte[] encryptedData = encrypt(serialized, sessionKey, AES_TRANSFORMATION);
-        byte[] sealedKey = encrypt(sessionKey.getEncoded(), receiverPub, RSA_TRANSFORMATION);
-        return new EnvelopeContent(encryptedData, sealedKey);
+    // byte[]를 ObjectInputStream으로 역직렬화 → SecretKey 객체
+    private static SecretKey bytesToKey(byte[] keyBytes)
+            throws IOException, ClassNotFoundException {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(keyBytes);
+             ObjectInputStream ois = new ObjectInputStream(bais)) {
+            return (SecretKey) ois.readObject();
+        }
     }
 
-    // 전자봉투 생성 (AES 비밀키를 내부에서 자동 생성하는 오버로드)
-    public static EnvelopeContent seal(byte[] serialized, PublicKey receiverPub) throws GeneralSecurityException {
-        SecretKey sessionKey = KeyGenerator.getInstance("AES").generateKey();
-        return seal(serialized, receiverPub, sessionKey);
+    // -------------------------------------------------------------------------
+    // SignedDocument ↔ byte[] 변환
+    // -------------------------------------------------------------------------
+
+    public static byte[] signedToBytes(SignedDocument signed) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(signed);
+            return baos.toByteArray();
+        }
     }
 
-    // 대칭/비대칭 공통 암호화 헬퍼 (seal 내부 전용)
-    private static byte[] encrypt(byte[] data, Key key, String transformation) throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance(transformation);
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return cipher.doFinal(data);
-    }
-
-
-    // 전자봉투를 열어 본문을 복호화한 byte[]로 반환
-    public static byte[] open(EnvelopeContent envelope, PrivateKey receiverPriv) throws GeneralSecurityException {
-        byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
-        SecretKey sessionKey = new SecretKeySpec(keyBytes, "AES");
-        return decrypt(envelope.getEncryptedData(), sessionKey, AES_TRANSFORMATION);
-    }
-
-    // 복호화한 byte[]를 SignedDocument 객체로 복원
-    public static SignedDocument deserialize(byte[] serialized) throws IOException, ClassNotFoundException {
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serialized))) {
+    public static SignedDocument bytesToSigned(byte[] signedBytes)
+            throws IOException, ClassNotFoundException {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(signedBytes);
+             ObjectInputStream ois = new ObjectInputStream(bais)) {
             return (SignedDocument) ois.readObject();
         }
     }
 
-    // 대칭/비대칭 공통 복호화 헬퍼 (open 내부 전용)
-    private static byte[] decrypt(byte[] data, Key key, String transformation) throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance(transformation);
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        return cipher.doFinal(data);
+    // -------------------------------------------------------------------------
+    // 전자봉투 봉인(seal) / 개봉(open)
+    // -------------------------------------------------------------------------
+
+    public static EnvelopeContent seal(byte[] signedBytes, PublicKey receiverPub)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException,
+            InvalidKeyException, IOException {
+
+        SecretKey secretKey = KeyManager.generateAESKey();
+        byte[] encryptedData = encrypt(signedBytes, secretKey, AES_TRANSFORMATION);
+
+        byte[] keyBytes = keyToBytes(secretKey);
+        byte[] sealedKey = encrypt(keyBytes, receiverPub, RSA_TRANSFORMATION);
+
+        return new EnvelopeContent(encryptedData, sealedKey);
+    }
+
+    public static byte[] open(EnvelopeContent envelope, PrivateKey receiverPriv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, IllegalBlockSizeException,
+            BadPaddingException, IOException, ClassNotFoundException {
+
+        byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
+        SecretKey secretKey = bytesToKey(keyBytes);
+
+        return decrypt(envelope.getEncryptedData(), secretKey, AES_TRANSFORMATION);
     }
 }
