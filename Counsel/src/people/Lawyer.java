@@ -12,7 +12,7 @@ public class Lawyer extends Person {
 	// 제출받은 전자봉투를 개봉하고 서명을 검증하는 행위
 	public boolean receiveAndVerifyEvidence(DigitalEnvelope.EnvelopeContent envelope, Person sender) throws Exception {
 		byte[] opened = DigitalEnvelope.open(envelope, getPrivateKey());
-		DigitalEnvelope.SignedDocument deserialized = DigitalEnvelope.deserialize(opened);
+		DigitalEnvelope.SignedDocument deserialized = DigitalEnvelope.bytesToSigned(opened);
 
 		boolean verified = verifySignature(deserialized, sender);
 		if (verified) {

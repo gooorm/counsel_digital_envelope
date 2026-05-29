@@ -46,22 +46,20 @@ public class Main {
 				System.out.println("\n동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
 				return;
 			}
-			String consentText = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
-			SignedDocument consent = client.signConsent(consentText);
-			buffering("동의서 전송 중", 1);
-			System.out.println("→ 내담자가 동의서에 전자서명하여 전송했습니다.");
-			
+			String agreement = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
+			SignedDocument consent = client.signConsent(agreement);
 			
 			waitBeforeEnter("본인 확인을 진행하려면 엔터를 누르십시오.", sc);
+			
 			// [2] 상담사가 동의서의 서명을 검증
 			banner("[ 2 ] 상담사 : 동의서 서명 검증 (본인 확인)");
 			buffering("동의서 서명 검증 중", 2);
 			if (counselor.receiveAndVerifyConsent(consent, client)) {
 				waitBeforeEnter("상담 기록을 봉인 및 전송하려면 Enter를 누르십시오.", sc);
 				// [3] 상담사가 상담 기록을 봉인하여 변호사에게 전송
-				banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");
-				buffering("상담 기록 전송 중", 2);
+				banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");				
 				EnvelopeContent envelope = counselor.sealRecordFromFile(RECORD_FILE, lawyer);
+				buffering("상담 기록 전송 중", 2);
 				System.out.println("→ 상담사가 '" + RECORD_FILE + "'를 읽어 전자서명 후 전자봉투로 봉인하여 전송했습니다.");
 
 				// [4] 변호사가 전자봉투를 개봉하고 발신자 서명을 검증

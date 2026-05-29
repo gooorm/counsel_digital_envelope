@@ -48,7 +48,7 @@ public class Counselor extends Person {
 		SignedDocument confirmedDoc = new SignedDocument(signature, counselingRecord,
 				getPublicKey());
 
-		byte[] serialized = DigitalEnvelope.serialize(confirmedDoc);
+		byte[] serialized = DigitalEnvelope.signedToBytes(confirmedDoc);
 		return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
 	}
 
@@ -64,7 +64,7 @@ public class Counselor extends Person {
 		SignedDocument confirmedDoc = new SignedDocument(signature, data,
 				getPublicKey());
 
-		byte[] serialized = DigitalEnvelope.serialize(confirmedDoc);
+		byte[] serialized = DigitalEnvelope.signedToBytes(confirmedDoc);
 		return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
 	}
 	// 상담 기록을 파일로 저장
