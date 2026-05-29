@@ -1,7 +1,10 @@
 package people;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 
 import envelope.DigitalEnvelope.SignedDocument;
 import envelope.DigitalSignature;
@@ -29,12 +32,22 @@ public abstract class Person {
         return privateKey;
     }
 
-    public boolean verifySignature(SignedDocument document, PublicKey publicKey, String name) throws Exception {
-        boolean verified = DigitalSignature.verify(
-                document.getPlainText(),
-                document.getSignature(),
-                publicKey
-        );
+    public boolean verifySignature(SignedDocument document, PublicKey publicKey, String name) {
+        boolean verified = false;
+		try {
+			verified = DigitalSignature.verify(
+			        document.getPlainText(),
+			        document.getSignature(),
+			        publicKey
+			);
+			return verified;
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (SignatureException e) {
+			e.printStackTrace();
+		}
         
         return verified;
     }
