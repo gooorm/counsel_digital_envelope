@@ -4,10 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 
-import envelope.DigitalEnvelope.SignedDocument;
 import envelope.DigitalEnvelope;
 import envelope.DigitalEnvelope.EnvelopeContent;
+import envelope.DigitalEnvelope.SignedDocument;
 import envelope.DigitalSignature;
 
 public class Counselor extends Person {
@@ -27,8 +28,8 @@ public class Counselor extends Person {
 	}
 
 	// 내담자에게 동의서를 받고 검증하는 행위
-	public boolean receiveAndVerifyConsent(SignedDocument consent, Person client) throws Exception {
-		boolean verified = verifySignature(consent, client);
+	public boolean receiveAndVerifyConsent(SignedDocument consent, PublicKey publicKey, String name) throws Exception {
+		boolean verified = verifySignature(consent, publicKey, name);
 		if (verified) {
 			System.out.println(getName() + ": 내담자의 제3자 제공 동의서를 확인했습니다.");
 		}

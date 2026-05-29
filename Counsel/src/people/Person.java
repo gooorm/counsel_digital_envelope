@@ -29,18 +29,12 @@ public abstract class Person {
         return privateKey;
     }
 
-    public boolean verifySignature(SignedDocument document, Person sender) throws Exception {
+    public boolean verifySignature(SignedDocument document, PublicKey publicKey, String name) throws Exception {
         boolean verified = DigitalSignature.verify(
                 document.getPlainText(),
                 document.getSignature(),
-                sender.getPublicKey()
+                publicKey
         );
-        
-        if (verified) {
-            System.out.println(sender.getName() + "의 서명자 정보가 일치합니다.");
-        } else {
-        	System.out.println(sender.getName() + "의 서명자 정보가 일치하지 않습니다.");
-        }
         
         return verified;
     }

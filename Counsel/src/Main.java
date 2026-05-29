@@ -54,7 +54,7 @@ public class Main {
 			// [2] 상담사가 동의서의 서명을 검증
 			banner("[ 2 ] 상담사 : 동의서 서명 검증 (본인 확인)");
 			buffering("동의서 서명 검증 중", 2);
-			if (counselor.receiveAndVerifyConsent(consent, client)) {
+			if (counselor.receiveAndVerifyConsent(consent, client.getPublicKey(), client.getName())) {
 				waitBeforeEnter("상담 기록을 봉인 및 전송하려면 Enter를 누르십시오.", sc);
 				// [3] 상담사가 상담 기록을 봉인하여 변호사에게 전송
 				banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");				
@@ -67,7 +67,7 @@ public class Main {
 				banner("[ 4 ] 변호사 : 전자봉투 개봉 및 발신자 검증");
 				buffering("전자봉투 개봉 중", 1);
 				buffering("발신자 검증 중", 1);
-				if (lawyer.receiveAndVerifyEvidence(envelope, counselor)) {
+				if (lawyer.receiveAndVerifyEvidence(envelope, counselor.getPublicKey(), counselor.getName())) {
 					banner("모든 절차가 안전하게 완료되었습니다");
 				} else {
 					banner("전자봉투 개봉에 실패하였습니다.");
