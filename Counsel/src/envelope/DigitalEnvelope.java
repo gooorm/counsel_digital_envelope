@@ -21,7 +21,6 @@ public final class DigitalEnvelope {
         private final byte[] signature;
         private final byte[] plainText;
         private final PublicKey senderPubKey;
-
         
         public SignedDocument(byte[] signature, byte[] plainText, PublicKey senderPubKey) {
             this.signature = signature.clone();
@@ -173,27 +172,34 @@ public final class DigitalEnvelope {
         return new EnvelopeContent(encryptedData, sealedKey);
     }
 
+    // 첫 번째 암호화 데이터 개봉 (의사의 상담기록)
     public static byte[] open(EnvelopeContent envelope, PrivateKey receiverPriv)
             throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, IOException, ClassNotFoundException {
-
-        byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
-        SecretKey secretKey = bytesToKey(keyBytes);
-
-        return decrypt(envelope.getEncryptedData(), secretKey, AES_TRANSFORMATION);
+ 
+        return open(envelope, receiverPriv, 1);
     }
-
-    //추가된 메서드
-    public static byte[] open2(EnvelopeContent envelope, PrivateKey receiverPriv)
+ 
+    // [추가] index로 꺼낼 데이터를 선택
+    // index == 1 : 첫 번째 데이터 (의사의 서명 + 상담기록)
+    // index == 2 : 두 번째 데이터 (환자의 동의서)
+    public static byte[] open(EnvelopeContent envelope, PrivateKey receiverPriv, int index)
             throws NoSuchAlgorithmException, NoSuchPaddingException,
             InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, IOException, ClassNotFoundException {
  
         byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
         SecretKey secretKey = bytesToKey(keyBytes);
-
-        //수정된 부분
-        return decrypt(envelope.getEncryptedData2(), secretKey, AES_TRANSFORMATION);
+ 
+        byte[] target;
+        if (index == 1) {
+            target = envelope.getEncryptedData();   // 의사의 서명 + 상담기록
+        } else if (index == 2) {
+            target = envelope.getEncryptedData2();  // 환자의 동의서
+        } else {
+            throw new IllegalArgumentException("[open] 유효하지 않은 index: " + index + " (1=의사 서명 및 상담기록, 2=환자 동의서)");
+        }
+        return decrypt(target, secretKey, AES_TRANSFORMATION);
     }
 }
