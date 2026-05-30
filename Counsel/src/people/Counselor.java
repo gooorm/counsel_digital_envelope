@@ -54,19 +54,19 @@ public class Counselor extends Person {
 	}
 
 	// 파일에 저장된 상담 기록을 읽어서 전자봉투를 생성하는 행위
-	public EnvelopeContent sealRecordFromFile(String filePath, Person receiver) throws Exception {
-		// FileInputStream으로 파일 읽기
-		byte[] data;
+	public EnvelopeContent sealRecordFromFile(SignedDocument clientSigned, String filePath, PublicKey receiverKey) throws Exception {
+		byte[] record;
 		try (FileInputStream fis = new FileInputStream(filePath)) {
-			data = fis.readAllBytes();
+			record = fis.readAllBytes();
 		}
 
-		byte[] signature = DigitalSignature.sign(data, getPrivateKey());
-		SignedDocument confirmedDoc = new SignedDocument(signature, data,
-				getPublicKey());
+		byte[] signature = DigitalSignature.sign(record, getPrivateKey());
+		SignedDocument confirmedDoc = new SignedDocument(signature, record, getPublicKey());
 
+		
 		byte[] serialized = DigitalEnvelope.signedToBytes(confirmedDoc);
-		return DigitalEnvelope.seal(serialized, receiver.getPublicKey());
+		byte[] serialized2 = DigitalEnvelope.signedToBytes(clientSigned);
+		return DigitalEnvelope.seal(serialized, serialized2, receiverKey);
 	}
 	// 상담 기록을 파일로 저장
 	public void writeRecordToFile(String fileName) throws IOException {

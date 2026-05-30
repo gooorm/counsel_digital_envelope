@@ -22,6 +22,7 @@ public final class DigitalEnvelope {
         private final byte[] plainText;
         private final PublicKey senderPubKey;
 
+        
         public SignedDocument(byte[] signature, byte[] plainText, PublicKey senderPubKey) {
             this.signature = signature.clone();
             this.plainText = plainText.clone();
@@ -48,20 +49,31 @@ public final class DigitalEnvelope {
         private static final long serialVersionUID = 1L;
 
         private final byte[] encryptedData; // AES로 암호화된 SignedDocument
+        private final byte[] encryptedData2; // AES로 암호화된 SignedDocument
         private final byte[] sealedKey;     // SecretKey 객체를 RSA로 암호화한 전자봉투
 
         public EnvelopeContent(byte[] encryptedData, byte[] sealedKey) {
             this.encryptedData = encryptedData.clone();
+            this.encryptedData2 = new byte[0];
+            this.sealedKey = sealedKey.clone();
+        }
+        
+        public EnvelopeContent(byte[] encryptedData, byte[] encryptedData2, byte[] sealedKey) {
+            this.encryptedData = encryptedData.clone();
+            this.encryptedData2 = encryptedData2.clone();
             this.sealedKey = sealedKey.clone();
         }
 
         public byte[] getEncryptedData() {
             return encryptedData.clone();
         }
-
+        public byte[] getEncryptedData2() {
+            return encryptedData.clone();
+        }
         public byte[] getSealedKey() {
             return sealedKey.clone();
         }
+      
     }
 
     // -------------------------------------------------------------------------
@@ -130,6 +142,20 @@ public final class DigitalEnvelope {
     // 전자봉투 봉인(seal) / 개봉(open)
     // -------------------------------------------------------------------------
 
+    public static EnvelopeContent seal(byte[] signedBytes, byte[] signedBytes2, PublicKey receiverPub)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException,
+            InvalidKeyException, IOException {
+
+        SecretKey secretKey = KeyManager.generateAESKey();
+        byte[] encryptedData = encrypt(signedBytes, secretKey, AES_TRANSFORMATION);
+        byte[] encryptedData2 = encrypt(signedBytes2, secretKey, AES_TRANSFORMATION);
+
+        byte[] keyBytes = keyToBytes(secretKey);
+        byte[] sealedKey = encrypt(keyBytes, receiverPub, RSA_TRANSFORMATION);
+
+        return new EnvelopeContent(encryptedData, encryptedData2, sealedKey);
+    }
     public static EnvelopeContent seal(byte[] signedBytes, PublicKey receiverPub)
             throws NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException,

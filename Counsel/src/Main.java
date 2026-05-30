@@ -42,23 +42,23 @@ public class Main {
 			// [1] 내담자가 동의서에 서명하여 상담사에게 전송
 			banner("[ 1 ] 내담자 → 상담사 : 제3자 제공 동의");
 			System.out.print("상담 기록을 변호사에게 제공하는 데 동의하십니까? (Y/n) > ");
-			if (sc.nextLine().trim().toLowerCase().equals("y")) {
+			if (!sc.nextLine().trim().toLowerCase().equals("y")) {
 				System.out.println("\n동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
 				return;
 			}
 			String agreement = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
-			SignedDocument consent = client.signConsent(agreement);
+			SignedDocument clientSigned = client.signConsent(agreement);
 			
 			waitBeforeEnter("본인 확인을 진행하려면 엔터를 누르십시오.", sc);
 			
 			// [2] 상담사가 동의서의 서명을 검증
 			banner("[ 2 ] 상담사 : 동의서 서명 검증 (본인 확인)");
 			buffering("동의서 서명 검증 중", 2);
-			if (counselor.receiveAndVerifyConsent(consent, client.getPublicKey(), client.getName())) {
+			if (counselor.receiveAndVerifyConsent(clientSigned, client.getPublicKey(), client.getName())) {
 				waitBeforeEnter("상담 기록을 봉인 및 전송하려면 Enter를 누르십시오.", sc);
 				// [3] 상담사가 상담 기록을 봉인하여 변호사에게 전송
 				banner("[ 3 ] 상담사 → 변호사 : 상담 기록 봉인·전송");				
-				EnvelopeContent envelope = counselor.sealRecordFromFile(RECORD_FILE, lawyer);
+				EnvelopeContent envelope = counselor.sealRecordFromFile(clientSigned, RECORD_FILE, lawyer.getPublicKey());
 				buffering("상담 기록 전송 중", 2);
 				System.out.println("→ 상담사가 '" + RECORD_FILE + "'를 읽어 전자서명 후 전자봉투로 봉인하여 전송했습니다.");
 
@@ -67,7 +67,7 @@ public class Main {
 				banner("[ 4 ] 변호사 : 전자봉투 개봉 및 발신자 검증");
 				buffering("전자봉투 개봉 중", 1);
 				buffering("발신자 검증 중", 1);
-				if (lawyer.receiveAndVerifyEvidence(envelope, counselor.getPublicKey(), counselor.getName())) {
+				if (lawyer.receiveAndVerifyEvidence(envelope, counselor.getPublicKey(), counselor.getName(), client.getPublicKey(), client.getName())) {
 					banner("모든 절차가 안전하게 완료되었습니다");
 				} else {
 					banner("전자봉투 개봉에 실패하였습니다.");
