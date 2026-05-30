@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -62,12 +64,14 @@ public class Counselor extends Person {
 	}
 
 	// 파일에 저장된 상담 기록을 읽어서 전자봉투를 생성하는 행위
-	public EnvelopeContent sealRecordFromFile(SignedDocument clientSigned, String filePath, PublicKey receiverKey) 
-			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, 
-					NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public EnvelopeContent sealRecordFromFile(SignedDocument clientSigned, String filePath, PublicKey receiverKey)
+			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException,
+					NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
+		// 파일에서 암호화된 EnvelopeContent 읽고 개인키로 복호화
 		byte[] record = new byte[0];
-		try (FileInputStream fis = new FileInputStream(filePath)) {
-			record = fis.readAllBytes();
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+			EnvelopeContent encrypted = (EnvelopeContent) ois.readObject();
+			record = DigitalEnvelope.open(encrypted, getPrivateKey());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -82,10 +86,12 @@ public class Counselor extends Person {
 		byte[] serialized2 = DigitalEnvelope.signedToBytes(clientSigned);
 		return DigitalEnvelope.seal(serialized, serialized2, receiverKey);
 	}
-	// 상담 기록을 파일로 저장
-	public void writeRecordToFile(String fileName) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(fileName)) {
-			fos.write(counselingRecord);
+	// 상담 기록을 파일로 저장 (상담사 공개키로 암호화해서 저장)
+	public void writeRecordToFile(String fileName) throws Exception {
+		// 상담사 공개키로 암호화 -> 상담사 개인키로만 복호화 가능
+		EnvelopeContent encrypted = DigitalEnvelope.seal(counselingRecord, getPublicKey());
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+			oos.writeObject(encrypted);
 		}
 	}
 }
