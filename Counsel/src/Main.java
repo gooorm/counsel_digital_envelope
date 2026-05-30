@@ -5,7 +5,15 @@ import people.Client;
 import people.Counselor;
 import people.Lawyer;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.Scanner;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * 상담 기록 제3자 제공 — 전자봉투 보안 전송 프로토타입.
@@ -19,7 +27,7 @@ public class Main {
 
 	private static final String RECORD_FILE = "상담기록.txt";
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws ClassNotFoundException, NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		try (Scanner sc = new Scanner(System.in)) {
 
 			// 등장인물과 키 준비 (기존 키가 있으면 복구, 없으면 생성)
@@ -98,6 +106,7 @@ public class Main {
 	        } catch (InterruptedException e) {
 	            e.printStackTrace();
 	        }
+	        
 	    }
 
 	    System.out.println("] 완료");

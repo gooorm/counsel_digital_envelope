@@ -192,7 +192,7 @@ public final class DigitalEnvelope {
         byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
         SecretKey secretKey = bytesToKey(keyBytes);
  
-        byte[] target;
+        byte[] target; 
         if (index == 1) {
             target = envelope.getEncryptedData();   // 의사의 서명 + 상담기록
         } else if (index == 2) {

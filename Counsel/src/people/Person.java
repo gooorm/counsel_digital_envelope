@@ -39,6 +39,7 @@ public abstract class Person {
 			        document.getPlainText(),
 			        document.getSignature(),
 			        publicKey
+			        
 			);
 			return verified;
 		} catch (InvalidKeyException e) {

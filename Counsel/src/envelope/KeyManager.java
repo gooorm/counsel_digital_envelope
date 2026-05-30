@@ -50,7 +50,7 @@ public final class KeyManager {
 
     //-----------------------------------------------------------------------------
 
-    public static KeyPair getOrGenerateKeyPair(String name) throws Exception {
+    public static KeyPair getOrGenerateKeyPair(String name) throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
         String pubKeyFilename = name + "_pub.key";
         String privateKeyFilename = name + "_priv.key";
 

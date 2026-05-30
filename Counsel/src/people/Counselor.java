@@ -1,10 +1,18 @@
 package people;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.SignatureException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import envelope.DigitalEnvelope;
 import envelope.DigitalEnvelope.EnvelopeContent;
@@ -28,7 +36,7 @@ public class Counselor extends Person {
 	}
 
 	// 내담자에게 동의서를 받고 검증하는 행위
-	public boolean receiveAndVerifyConsent(SignedDocument consent, PublicKey publicKey, String name) throws Exception {
+	public boolean receiveAndVerifyConsent(SignedDocument consent, PublicKey publicKey, String name) {
 		boolean verified = verifySignature(consent, publicKey, name);
 		if (verified) {
 			System.out.println(getName() + ": 내담자의 제3자 제공 동의서를 확인했습니다.");
@@ -54,10 +62,16 @@ public class Counselor extends Person {
 	}
 
 	// 파일에 저장된 상담 기록을 읽어서 전자봉투를 생성하는 행위
-	public EnvelopeContent sealRecordFromFile(SignedDocument clientSigned, String filePath, PublicKey receiverKey) throws Exception {
-		byte[] record;
+	public EnvelopeContent sealRecordFromFile(SignedDocument clientSigned, String filePath, PublicKey receiverKey) 
+			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException, 
+					NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		byte[] record = new byte[0];
 		try (FileInputStream fis = new FileInputStream(filePath)) {
 			record = fis.readAllBytes();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		byte[] signature = DigitalSignature.sign(record, getPrivateKey());
