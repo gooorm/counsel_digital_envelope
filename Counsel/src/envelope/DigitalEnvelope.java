@@ -67,9 +67,11 @@ public final class DigitalEnvelope {
         public byte[] getEncryptedData() {
             return encryptedData.clone();
         }
-            public byte[] getEncryptedData2() {
-                return encryptedData2.clone();
-            }
+        
+        public byte[] getEncryptedData2() {
+            return encryptedData2.clone();
+        }
+        
         public byte[] getSealedKey() {
             return sealedKey.clone();
         }
@@ -156,6 +158,7 @@ public final class DigitalEnvelope {
 
         return new EnvelopeContent(encryptedData, encryptedData2, sealedKey);
     }
+    
     public static EnvelopeContent seal(byte[] signedBytes, PublicKey receiverPub)
             throws NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException,
