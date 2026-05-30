@@ -67,9 +67,9 @@ public final class DigitalEnvelope {
         public byte[] getEncryptedData() {
             return encryptedData.clone();
         }
-        public byte[] getEncryptedData2() {
-            return encryptedData.clone();
-        }
+            public byte[] getEncryptedData2() {
+                return encryptedData2.clone();
+            }
         public byte[] getSealedKey() {
             return sealedKey.clone();
         }
@@ -179,5 +179,18 @@ public final class DigitalEnvelope {
         SecretKey secretKey = bytesToKey(keyBytes);
 
         return decrypt(envelope.getEncryptedData(), secretKey, AES_TRANSFORMATION);
+    }
+
+    //추가된 메서드
+    public static byte[] open2(EnvelopeContent envelope, PrivateKey receiverPriv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, IllegalBlockSizeException,
+            BadPaddingException, IOException, ClassNotFoundException {
+ 
+        byte[] keyBytes = decrypt(envelope.getSealedKey(), receiverPriv, RSA_TRANSFORMATION);
+        SecretKey secretKey = bytesToKey(keyBytes);
+
+        //수정된 부분
+        return decrypt(envelope.getEncryptedData2(), secretKey, AES_TRANSFORMATION);
     }
 }
