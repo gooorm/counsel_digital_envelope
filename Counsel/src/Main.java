@@ -43,7 +43,10 @@ public class Main {
 			System.out.print("상담 내용 입력 > ");
 			String record = sc.nextLine();
 			counselor.setCounselingRecord(record); 
-			counselor.writeRecordToFile(RECORD_FILE);
+			if(counselor.writeRecordToFile(RECORD_FILE) != true) {
+				System.out.println("상담 파일 저장에 실패하였습니다.");
+			}
+
 			
 			System.out.println("→ '" + RECORD_FILE + "'에 저장되었습니다.");
 
@@ -85,7 +88,6 @@ public class Main {
 	}
 
 
-
 	// 구분선이 있는 단계 제목 출력
 	private static void banner(String title) {
 		System.out.println("\n============================================================");
@@ -106,7 +108,6 @@ public class Main {
 	        } catch (InterruptedException e) {
 	            e.printStackTrace();
 	        }
-	        
 	    }
 
 	    System.out.println("] 완료");

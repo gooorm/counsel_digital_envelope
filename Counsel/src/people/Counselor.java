@@ -1,11 +1,10 @@
 package people;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -13,6 +12,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -68,15 +68,7 @@ public class Counselor extends Person {
 			throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException,
 					NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
 		// 파일에서 암호화된 EnvelopeContent 읽고 개인키로 복호화
-		byte[] record = new byte[0];
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-			EnvelopeContent encrypted = (EnvelopeContent) ois.readObject();
-			record = DigitalEnvelope.open(encrypted, getPrivateKey());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		byte[] record = decrypt(filePath);
 
 		byte[] signature = DigitalSignature.sign(record, getPrivateKey());
 		SignedDocument confirmedDoc = new SignedDocument(signature, record, getPublicKey());
@@ -86,12 +78,66 @@ public class Counselor extends Person {
 		byte[] serialized2 = DigitalEnvelope.signedToBytes(clientSigned);
 		return DigitalEnvelope.seal(serialized, serialized2, receiverKey);
 	}
-	// 상담 기록을 파일로 저장 (상담사 공개키로 암호화해서 저장)
-	public void writeRecordToFile(String fileName) throws Exception {
-		// 상담사 공개키로 암호화 -> 상담사 개인키로만 복호화 가능
-		EnvelopeContent encrypted = DigitalEnvelope.seal(counselingRecord, getPublicKey());
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
-			oos.writeObject(encrypted);
+	private byte[] decrypt(String dataFile) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+		Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
+		cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
+		
+		byte[] encryptedData = new byte[0];
+		try(FileInputStream fs =  new FileInputStream(dataFile)) {
+			encryptedData = fs.readAllBytes();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		
+		try(ByteArrayOutputStream bs  = new ByteArrayOutputStream()){
+			int offset = 0;
+			while(offset < encryptedData.length) {
+				int length = Math.min(encryptedData.length - offset, 128);
+				byte[] plainBlock = cipher.doFinal(encryptedData, offset, length);
+				bs.write(plainBlock);
+				offset += length;
+			}
+			return bs.toByteArray();
+		} catch (IllegalBlockSizeException | BadPaddingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new byte[0];
+	}
+	
+	
+	// 상담 기록을 파일로 저장 (상담사 공개키로 암호화해서 저장)
+	public boolean writeRecordToFile(String fileName) throws NoSuchAlgorithmException, NoSuchPaddingException {
+		Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");;
+		try {
+			cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		}
+		
+		try(ByteArrayOutputStream bs = new ByteArrayOutputStream()){
+			int offset = 0;
+			while(offset < counselingRecord.length) {
+				int length = Math.min(counselingRecord.length  - offset, getPublicKey().getEncoded().length);
+				byte[] cipherBlock = cipher.doFinal(counselingRecord, offset, length);
+				bs.write(cipherBlock);
+				offset += length;
+			}
+			try (FileOutputStream fs = new FileOutputStream(fileName)){
+				fs.write(bs.toByteArray());
+				return true;
+			}
+			
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
