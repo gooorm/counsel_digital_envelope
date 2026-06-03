@@ -53,9 +53,20 @@ public class Main {
 
 		// [1] 내담자가 동의서에 서명하여 상담사에게 전송
 		banner("[ 1 ] 내담자 → 상담사 : 제3자 제공 동의");
+		
+		String agree = "";
 		System.out.print("상담 기록을 변호사에게 제공하는 데 동의하십니까? (Y/n) > ");
-		if (!sc.nextLine().trim().toLowerCase().equals("y")) {
-			System.out.println("\n동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
+		while(true) {
+			agree = sc.nextLine().trim().toLowerCase();
+			if(agree.equals("y") || agree.equals("n")){
+				break;
+			}
+			else {
+				System.out.println("동의에 실패하였습니다. y또는 n만 입력해주세요.");
+			}
+		}
+		if (agree.equals("n")) {
+			System.out.println("동의가 확인되지 않아 절차를 종료합니다. 좋은 하루 되세요.");
 			return;
 		}
 		String agreement = client.getName() + "은(는) 상담 기록을 제3자(" + lawyer.getName() + ")에게 제공하는 것에 동의합니다.";
